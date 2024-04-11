@@ -1,87 +1,166 @@
-[toc]
+# 快速开始
 
-# Getting Started
+## VCS分类
 
-存储差异：
+### Local Version Control Systems
 
-- 传统VCS：基于文件的delta-based
-- Git：a stream of snapshots.
+- [RCS](https://www.gnu.org/software/rcs/)
 
+### Centralized Version Control Systems
 
+- CVS(Concurrent Versions System)
 
-完整性：Git使用 SHA-1(40个字符) 算法判断文件是否有改变。Git only add data to the Git database.
+- Subversion
 
+- Perforce
 
+### Distributed Version Control Systems
 
-三个阶段：
+- Git
+- Mercurial
+- Darcs
 
-- Working Diretory：modified.
-- Staging Area：staged.
-- .git directory(Repository)：committed.
+**delta-based**
 
+**stream of snapshots**
 
+## Git Has Integrity
 
-Git配置：`git config --list --show-origin`
+**SHA-1 hash**：**40-character** string composed of hexadecimal characters (0–9 and a–f)
 
-- 全局配置：`/etc/gitconfig`  `git config --system`
-- 用户配置：`~/.gitconfig` or `~/.config/git/config`  `git config --global`
-- 工程配置：`.git/config`  `git config --local`
+## Three States
+
+- modified：the working tree
+- staged：the staging area(**index**)
+- committed：the Git directory
+
+## Git Setup
 
 ```
-# 必须配置：git每次提交的时候会使用这些信息
-git config --global user.name Ren-XingYu
-git config --global user.email 379271608@qq
-
-# 设置默认分支的名字: git 2.28之前使用git init创建仓库的时候，默认名称是master, 2.28之后可以修改
-# git默认创建的分支是master, github 2020年将默认创建的分支从master改为main
-git config --global init.defaultBranch main
-
-# git2.27之后需要设置pull.rebase
-git config --global pull.rebase "false"
-
-# 显示配置
+git config --list
+git config --list --show-origin
 git config user.name
 
-# 获取帮助信息
-git helo <verb>
+# 查看某个值读取的哪个配置
+git config --show-origin rerere.autoUpdate
+```
+
+**系统配置**：针对所有用户、所有仓库
+
+```
+# Git的安装目录
+[path]/etc/gitconfig
+
+git config --sytem
+```
+
+**用户配置**：针对某个用户下所有仓库
+
+```
+# Windows - C:\Users\$USER 
+~/.gitconfig or ~/.config/git/config
+
+git config --global
+
+
+# 设置身份信息(每次commit提交时会使用)
+git config --global user.name "xxx"
+git config --global user.email "xxx"
+
+# 设置系统默认的编辑器(当git需要输入信息的时候使用)
+git config --global core.editor emacs
+git config --global core.editor "'C:/Program Files/Notepad++/notepad++.exe' -multiInst -notabbar -nosession -noPlugin"
+
+# 设置默认分支(git2.28之后的版本支持)
+git config --global init.defaultBranch main
+
+# 设置是否需要rebase
+git config --global pull.rebase "false"
+
+# 避免通过https传输时,每次都需要输入账号密码
+git config --global credential.helper cache
+```
+
+**仓库配置**：针对某个仓库
+
+```
+config file in the Git directory (that is, .git/config)
+
+git config --local
+```
+
+## Git Help
+
+```
+git help <verb>
 git <verb> --help
 git <verb> -h
+man git-<verb>
 ```
 
 # Git Basics
 
-## Getting a Git Repository
-
 ```
 git init
+git add xxx
+git commit -m "xxx"
 
-git clone https://github.com/libgit2/libgit2 [alias]
+git clone <url>
+
+git clone https://github.com/libgit2/libgit2
+git clone https://github.com/libgit2/libgit2 mylibgit
+
+
+git status
+# M:修改已有 ??:新文件 A:已经staged的文件
+git status -s
+git status --short
+
+GitHub changed the default branch name from master to main in mid-2020
+
+# 跳过stage阶段
+git commit -a -m "xxx"
 ```
 
-## Recording Changes to Repository
+## 添加新文件
 
-``` <>
+```
+echo hello > README
 git status
 
-echo aaa > README
-
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
 git add README
 
-# Show changes between commits, commit and working tree
-git diff
-git diff --staged
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+git restore --staged README
 
-# -a : 自动进行stage(git adds)
-git commit -a -m "xxx"
-
-# 删除
-git rm xxx
-
-# 改名字
-git mv file_from file_to
+git commit -m "README"
 ```
 
-### .gitignore
+## 修改已有文件
+
+```
+echo hello > README.md
+git status
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+
+git restore README.md
+
+git add README.md
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+
+git commit -m "README.md"
+```
+
+## .gitignore
+
+常见[gitignore](https://github.com/github/gitignore)文件
 
 ```
 # ignore all .a files
@@ -100,17 +179,66 @@ build/
 doc/*.txt
 
 # ignore all .pdf files in the doc/ directory and any of its subdirectories
-# **代表嵌套的目录,a/**/z 可以匹配 a/z, a/b/z, a/b/c/z
 doc/**/*.pdf
 ```
 
-## Viewing the Commit History
+## diff内容比较
 
 ```
-# -p: patch
-# -2：像是2个差异
+# compares what is in your working directory with what is in your staging area
+git diff
+
+# compares your staged changes to your last commit
+git diff --staged
+```
+
+## 删除文件
+
+```
+git rm xxx
+git commit -m "xxx"
+
+或者
+
+del xxx
+git add/rm xxx
+git commit -m "xxx"
+```
+
+## 重命名文件
+
+```
+git mv EADME.md README
+git commit xxx
+
+相当于
+mv README.md README
+git rm README.md
+git add README
+git commit -m ”xxx"
+```
+
+## 查看git日志
+
+```
+git log
+
+# 查看每次commit的path
+git log --patch xxx
+git log -p xxx
 git log -p -2
+
+# 查看每次commmit的简单状态信息
 git log --stat
+
+# 设置输出格式
+git log --pretty=oneline
+git log --pretty=format:"%h - %an, %ar : %s"
+
+# 查看最近的2次提交
+git commit -n 2
+
+# 查看进两周的提交
 git log --since=2.weeks
 ```
 
@@ -118,75 +246,109 @@ git log --since=2.weeks
 
 ```
 git commit --amend
-
-# use "git restore --staged <file>..." to unstage
-git restore --staged README
-
-# use "git restore <file>..." to discard changes in working directory
-git restore SECURITy
-
 ```
 
-## Working with Remotes
+## Working with Remote
 
 ```
+git remote
 git remote -v
 
-# git remote add <shortname> <url>
+git remote add <shortname> <url>
 git remote add pb https://github.com/paulboone/ticgit
 
-# 只fetch不merge
 git fetch <remote>
 git fetch pb
 
-# fetch + merge
-git pull pb
+git push <remote> <branch>
+git push origin master
 
-# rename remote
-git remote rename pb paul
-
-# delete remote
-git remote rm paul
-
-# Inspecting a Remote
 git remote show <remote>
 git remote show origin
 
-# 推送到远程仓库
-git push <remote> <branch>
-git push remote master
+git remote rename <oldname> <newname>
+git remote rename pb paul
+
+git remote remove <shortname>
+git remote remove paul
 ```
 
-## Tagging
+## Tags
 
 ```
-# 打tag
-# lightweight tag：just a pointer to a specific commit
-# annotated tags：stored as full objects in the git database
+git tag
 git tag -l
+git tag --list
+```
 
-# annotated tags
+Git支持两种类型的Tag：**lightweight** 和 **annotated**
+
+A lightweight tag is very much like a branch that doesn’t change — it’s just a pointer to a specific commit.
+
+Annotated tags, however, are stored as full objects in the Git database. They’re checksummed; contain the tagger name, email, and date; have a tagging message.
+
+### Annotated Tags
+
+```
+# 需要加-a参数
 git tag -a v1.4 -m "my version 1.4"
 
-# lightweight tags
+git show v1.4
+```
+
+### Lightweight Tags
+
+To create a lightweight tag, don’t supply any of the `-a`, `-s`, or `-m` options, just provide a tag name
+
+```
 git tag v1.4-lw
 
-# 删除tag
-git tag -d v1.4-lw # 删除本地tag
-git push origin --delete <tagname> 远程tag
+git show v1.4-lw
+```
 
-# 基于某次提交打一个Tag
+### Tagging Later
+
+```
 git log --pretty=oneline
+
 git tag -a v1.2 9fceb02
+```
 
-# git默认不推送tag到远程仓库,需要手动推送
+### Sharing Tags
+
+```
 git push origin <tagname>
-git push origin v1.4
-# 全部推送
-git push origin --tags
 
-# checkout分支代码
+git push origin v1.5
+
+# 本地所有tag推送到远程仓
+git push origin --tags
+```
+
+### Deleting Tags
+
+```
+# 删除本地Tag
+git tag -d <tagname>
+
+git tag -d v1.4-lw
+
+# 删除远端Tag方式一
+git push <remote> :refs/tags/<tagname>
+
+git push origin :refs/tags/v1.4-lw
+
+# 删除远端Tag方式二
+git push origin --delete <tagname>
+```
+
+### Checking out Tags
+
+```
+# You are in 'detached HEAD' state.不推荐
 git checkout v2.0.0
+
+# 推荐
 git checkout -b version2 v2.0.0
 ```
 
@@ -195,7 +357,7 @@ git checkout -b version2 v2.0.0
 ```
 git config --global alias.ci commit
 
-git commit -> git ci
+git ci
 ```
 
 # Git Branching
@@ -203,34 +365,36 @@ git commit -> git ci
 ## Creating a New Branch
 
 ```
-# 只创建分支,HEAD指针还是在原来的分支上
 git branch testing
 
-# 查看HEAD指针所在的分支
 git log --oneline --decorate
 ```
 
 ## Switching Branches
 
 ```
-# HEAD指针会移动
 git checkout testing
 
-# git log只会显示当前HEAD指针所在的分支,--all则显示所有commit信息
-git log
 git log --oneline --decorate --graph --all
+
+# 创建并切换分支
+git checkout -b <newbranchname>
+
+# From Git version 2.23 onwards you can use git switch instead of git checkout 
+git switch testing-branch
+
+git switch -c new-branch
+
+git switch -
 ```
 
 ## Basic Branching and Merging
 
 ```
-# 创建分支请切换
-git checkout -b iss53
-
-# 合并
+# 把hotfix分支合并到当前分支
 git merge hotfix
 
-# 删除分支
+# 删除hotfix分支
 git branch -d hotfix
 ```
 
@@ -238,153 +402,115 @@ git branch -d hotfix
 
 ```
 git branch
+
 git branch -v
+
+# 已经合并到当前分支的分支
 git branch --merged
-git branch -d testing
 
-# 改变分支的名字
+# 未合并到当前分支的分支
+git branch --no-merged
+```
+
+## Changing a branch name
+
+```
 git branch --move bad-branch-name corrected-branch-name
+
 git push --set-upstream origin corrected-branch-name
+
 git branch --all
+
 git push origin --delete bad-branch-name
-```
 
-## Branching Workflows
-
-```
-主分支：master
-开发分支：develop
-特性分支：topic
+git branch --move master main
 ```
 
 ## Remote Branches
 
 ```
+<remote>/<branch>
+
 git ls-remote <remote>
+git ls-remote origin
+
 git remote show <remote>
+git remote show origin
 
+git fetch <remote>
+git fetch origin
+
+git clone -o booyah
+booyah/master
+```
+
+### Pushing
+
+```
 git push <remote> <branch>
+git push origin serverfix
+等价于
+git push origin serverfix:serverfix
 
+# 本地的serverfix分支推送到远程的awesomebranch分支
+git push origin serverfix:awesomebranch
+
+git fetch origin
+git merge origin/serverfix
+
+git checkout -b serverfix origin/serverfix
+```
+
+### Tracking Branches
+
+Checking out a local branch from a remote-tracking branch automatically creates what is called a “**tracking branch**” (and the branch it tracks is called an “**upstream branch**”). Tracking branches are local branches that have a direct relationship to a remote branch. If you’re on a tracking branch and type git pull, Git automatically knows which server to fetch from and which branch to merge in.
+
+```
 git checkout -b <branch> <remote>/<branch>
+等价于
+git checkout --track origin/serverfix
 
-git branch -vvs
+git checkout -b sf origin/serverfix
+```
 
+If you already have a local branch and want to set it to a remote branch you just pulled down, or want to change the upstream branch you’re tracking, you can use the `-u` or `--set-upstream-to` option to git branch to explicitly set it at any time
+
+```
+git branch -u origin/serverfix
+
+git branch -vv
+
+git fetch --all; git branch -vv
+```
+
+### Pulling
+
+```
+# git fetch + git merge
+git pull
+```
+
+### Deleting Remote Branches
+
+```
 git push origin --delete serverfix
 ```
 
-# Rebasing
+## Rebasing
 
-合并分支的两种方式：
-
-- merge：creating a new snapshot (and commit)
-- rebase：take the patch of the change that was introduced in A and reapply it on top of B.
-
-rebase的优点：makes for a cleaner history.
-
-```mermaid
-flowchart RL
-    experiment --> C4
-    C4 --> C2
-    C2 --> C1
-    C1 --> C0
-    master --> C3
-    C3 --> C2
-```
-
-
+In Git, there are two main ways to integrate changes from one branch into another: the `merge` and the `rebase`. 
 
 ```
-# 切换到experiment分支
+# 1、切换到experiment分支
 git checkout experiment
 
-# 在experiment分支上创建基于master分支的补丁
+# 2、在当前分支(experiment)，基于住分支打一个patch，并移动指针
 git rebase master
 
-# 切换到master分支
+# 3、切换到主分支
 git checkout master
 
-# 合并experiment分支的补丁
+# 4、合并experiment分支
 git merge experiment
-```
-
-```mermaid
-flowchart RL
-    experiment --> C4'
-    C4' --> C3
-    C3 --> C2
-    C2 --> C1
-    C1 --> C0
-    master --> C4'
-```
-
-
-
-```mermaid
-flowchart RL
-	C2 --> C1
-	C5 --> C2
-	C6 --> C5
-	master --> C6
-    C3 --> C2
-    C4 --> C3
-    C10 --> C4
-    server --> C10
-    C8 --> C3
-   	C9 --> C8
-   	client --> C9
-```
-
-
-
-
-
-```
-# Take the client branch, figure out the patches since it diverged from the server branch, and replay these patches in the client branch as if it was based directly off the master branch instead.
-
-git rebase --onto master server client
-git checkout master
-git merge client
-
-git rebase master server
-git checkout master
-git merge server
-
-git branch -d client
-git branch -d server
-```
-
-```mermaid
-flowchart RL
-	master --> C10'
-	C10' --> C4'
-	C4' --> C3'
-	C3' --> C9'
-	C9' --> C8'
-	C8' --> C6
-    C6 --> C5
-    C5 --> C2
-   	C2 --> C1
-```
-
-# Github
-
-### create a new repository on the command line
-
-```
-echo "# Test" >> README.md
-git init
-git add README.md
-git commit -m "first commit"
-git branch -M main
-git remote add origin https://github.com/Ren-XingYu/Test.git
-git push -u origin main
-```
-
-### push an existing repository from the command line
-
-```
-git remote add origin https://github.com/Ren-XingYu/Test.git
-git branch -M main
-git push -u origin main
 ```
 
